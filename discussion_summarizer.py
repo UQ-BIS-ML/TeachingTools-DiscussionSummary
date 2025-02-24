@@ -54,10 +54,7 @@ def initialize_openai_client() -> None:
     api_key = load_api_key()
 
     try:
-        openai.api_key = api_key
-        # Test the API key with a simple request
-        openai.Model.list()
-        client = openai
+        client = openai.OpenAI(api_key=api_key)
         logger.info("OpenAI client initialized and validated successfully.")
     except Exception as e:
         error_msg = f"Invalid API key or connection issue: {e}"
@@ -187,7 +184,7 @@ def main():
                 with gr.Row():
                     model_dropdown = gr.Dropdown(
                         label="Select OpenAI Model",
-                        choices=AVALIABLE_MODELS,
+                        choices=AVAILABLE_MODELS,
                         value=DEFAULT_MODEL,  # Default selection
                         interactive=True
                     )

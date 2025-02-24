@@ -36,7 +36,7 @@ PERSONAL_OPENAI_KEY=your_api_key_here
 ### 4. **Prepare Directories:**
 Ensure the following directories exist:
 ```bash
-mkdir -p Padlet_Discussions Summaries
+mkdir -p Discussions Summaries
 ```
 
 ---
@@ -45,7 +45,7 @@ mkdir -p Padlet_Discussions Summaries
 
 ### **Run the Application:**
 ```bash
-python padlet_summarizer.py
+python discussion_summarizer.py
 ```
 
 ### **Open the Interface:**
@@ -64,9 +64,9 @@ Navigate to `http://localhost:7860` in your browser.
 
 ```bash
 .
-├── Padlet_Discussions     # Directory for input Excel files
+├── Discussions     # Directory for input Excel files
 ├── Summaries              # Directory where summaries are saved
-├── padlet_summarizer.py                 # Main application file
+├── discussion_summarizer.py                 # Main application file
 ├── requirements.txt       # Python dependencies
 └── .env                   # API key configuration
 ```

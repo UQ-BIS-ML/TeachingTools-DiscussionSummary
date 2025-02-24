@@ -8,29 +8,70 @@ from tenacity import retry, stop_after_attempt, wait_random_exponential
 import time
 import gradio as gr
 
-# Load environment variables and set up OpenAI client
-load_dotenv()
-client = openai.OpenAI(api_key=os.getenv('PERSONAL_OPENAI_KEY'))
-
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-
-DELAY_TIME = 30
-
-# Define the OpenAI models you want to include in the picker
-AVALIABLE_MODELS = [
-    "gpt-4o-mini",
-    "gpt-4o",
-]
-
+# Constants
+DELAY_TIME = 30  # Delay to manage API rate limits
+AVAILABLE_MODELS = ["gpt-4o-mini", "gpt-4o"]  # OpenAI models available
 DEFAULT_MODEL = "gpt-4o-mini"  # Default model
 
+# Global OpenAI client
+client = None
+
+
+def load_api_key() -> str:
+    """Load the OpenAI API key from environment variables or .env file in the repository."""
+
+    # Try loading from standard environment variables (e.g., .zshrc, .bashrc, or system envs)
+    api_key = os.getenv('PERSONAL_OPENAI_KEY')
+
+    if api_key:
+        logger.info("API key loaded from environment variables.")
+        return api_key
+
+    # Fallback: Manually load from .env file in the current repo
+    env_path = os.path.join(os.getcwd(), '.env')
+    if os.path.exists(env_path):
+        logger.info(f"Attempting to load API key from {env_path}")
+        load_dotenv(env_path)
+        api_key = os.getenv('PERSONAL_OPENAI_KEY')
+
+        if api_key:
+            logger.info("API key loaded from .env file in repository.")
+            return api_key
+
+    # If still no key, raise an error
+    error_msg = "Error: No API key found. Please ensure PERSONAL_OPENAI_KEY is set in the environment or .env file."
+    logger.error(error_msg)
+    raise ValueError(error_msg)
+
+
+def initialize_openai_client() -> None:
+    """Initialize the global OpenAI client."""
+    global client
+    api_key = load_api_key()
+
+    try:
+        openai.api_key = api_key
+        # Test the API key with a simple request
+        openai.Model.list()
+        client = openai
+        logger.info("OpenAI client initialized and validated successfully.")
+    except Exception as e:
+        error_msg = f"Invalid API key or connection issue: {e}"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
+
+
+# Initialize the OpenAI client at startup
+initialize_openai_client()
+
+
 def set_model(model, state):
     state[0] = model  # Update the state
     return f"Model set to {model}"
-
 
 
 # Function to stream logs to output box
@@ -38,16 +79,17 @@ def log_output(message: str):
     logger.info(message)
     return message
 
+
 def set_model(model, state):
     state[0] = model  # Update the state
     return f"Model set to {model}"
-
 
 
 # Function to stream logs to output box
 def log_output(message: str):
     logger.info(message)
     return message
+
 
 def estimate_tokens(word_count):
     # Average token per word ratio
@@ -57,7 +99,6 @@ def estimate_tokens(word_count):
 
 @retry(stop=stop_after_attempt(3), wait=wait_random_exponential(min=1, max=60))
 def synthesize_discussions(model: str, discussions: List[str], context: str, word_count: int) -> str:
-
     prompt = f"""
     The goal of this synthesis is to condense multiple discussion posts into a clear and engaging paragraph suitable for a providing to students as a recap. 
     The final output should capture the key points, shared insights, and overarching themes from the discussions while maintaining a friendly and accessible tone for a broad audience.
@@ -79,7 +120,6 @@ def synthesize_discussions(model: str, discussions: List[str], context: str, wor
     Keep the response under {word_count} words.
     """
 
-
     time.sleep(DELAY_TIME)
 
     response = client.chat.completions.create(
@@ -93,17 +133,16 @@ def synthesize_discussions(model: str, discussions: List[str], context: str, wor
     )
     return response.choices[0].message.content
 
+
 def process_discussion_in_gradio(model: str, excel_file: str, context: str, word_count: int):
-
     summaries: List[str] = []
-
 
     filename = os.path.basename(excel_file)
     log_output(f"Processing: {filename}")
 
     ##code to get list of discussions
-    df = pd.read_excel(f'./Padlet_Discussions/{filename}')
-    summaries =[discussion for discussion in df['Body'] if discussion != 'No data']
+    df = pd.read_excel(f'./Discussions/{filename}')
+    summaries = [discussion for discussion in df['Body'] if discussion != 'No data']
 
     discussion_summary = synthesize_discussions(model, summaries, context, word_count)
     output_filename = f'./Summaries/{filename}_summary.txt'
@@ -113,12 +152,10 @@ def process_discussion_in_gradio(model: str, excel_file: str, context: str, word
 
     log_output(f"Discussion summary completed and saved as {output_filename}")
 
-
     return discussion_summary
 
 
 def main():
-
     with gr.Blocks(css="""
         #discussion-box {height: 200px;}
         #selection-box {height: 100px;}
@@ -139,7 +176,6 @@ def main():
 
             # Left Column
             with gr.Column(scale=1):
-
                 word_count_slider = gr.Slider(
                     label="Word Count Limit",
                     minimum=100,
@@ -159,7 +195,6 @@ def main():
         with gr.Row():
             # Left Column
             with gr.Column(scale=1):
-
                 context_textbox = gr.Textbox(
                     label="Edit Context",
                     lines=10,
@@ -170,14 +205,11 @@ def main():
 
             # Right Column
             with gr.Column(scale=1):
-
                 output = gr.Textbox(
                     label="Output",
                     lines=30,
                     elem_id="output-box"
                 )
-
-
 
         def check_model_name(model_name):
             """Load the content of the selected task into the textbox."""
@@ -185,7 +217,6 @@ def main():
 
         def process_files_and_task(model, excel_files, context, word_count):
             return process_discussion_in_gradio(model, excel_files, context, word_count)
-
 
         # Populate the textbox when a task is selected
         model_dropdown.change(fn=check_model_name, inputs=model_dropdown, outputs=None)

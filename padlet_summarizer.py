@@ -1,19 +1,10 @@
-import json
 import os
-import PyPDF2
 import openai
 from dotenv import load_dotenv
 import logging
-from datetime import datetime
 import pandas as pd
-from gradio.components.state import State
-from pydantic import BaseModel
-from typing import List, Optional, Literal
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from tqdm import tqdm
+from typing import List
 from tenacity import retry, stop_after_attempt, wait_random_exponential
-import unicodedata
-import re
 import time
 import gradio as gr
 
@@ -115,7 +106,7 @@ def process_discussion_in_gradio(model: str, excel_file: str, context: str, word
     summaries =[discussion for discussion in df['Body'] if discussion != 'No data']
 
     discussion_summary = synthesize_discussions(model, summaries, context, word_count)
-    output_filename = f'./Summaries/{filename}_summary.md'
+    output_filename = f'./Summaries/{filename}_summary.txt'
 
     with open(output_filename, 'w') as f:
         f.write(discussion_summary)

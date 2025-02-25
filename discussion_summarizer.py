@@ -108,11 +108,12 @@ def synthesize_discussions(model: str, discussions: List[str], context: str, wor
     </DISCUSSIONS>
     
     Task:
-    Generate a cohesive and concise paragraph that summarizes the key takeaways from the discussion posts listed between <DISCUSSIONS></DISCUSSIONS>. 
-    Ensure the paragraph flows naturally, highlights any consensus or differing opinions, and aligns with the provided context. 
-    Be sure to include good examples from the students discussions.
+    - Generate a cohesive and concise summary of the key takeaways from the discussion posts listed between <DISCUSSIONS></DISCUSSIONS>. 
+    - Ensure it flows naturally, highlights any consensus or differing opinions, and aligns with the provided context. 
+    - Be sure to include good examples from the students discussions.
+    - Ensure the presentation is quick to digest (bullet points) and easy to understand, especially for students where english is not their first language.
     
-    Finally, you must give your best answer to the context and discussion in one sentence, using the format- "LLM Answer:"
+    As a concluding point, you must give your best answer to the context and discussion in one sentence, using the format- "LLM Answer:"
     
     Keep the response under {word_count} words.
     """
@@ -123,7 +124,7 @@ def synthesize_discussions(model: str, discussions: List[str], context: str, wor
         model=model,
         messages=[
             {"role": "system",
-             "content": "You are a helpful assistant that creates comprehensive, well-structured literature reviews."},
+             "content": "You are a helpful assistant that creates comprehensive, well-structured summaries"},
             {"role": "user", "content": prompt}
         ],
         max_tokens=estimate_tokens(word_count)

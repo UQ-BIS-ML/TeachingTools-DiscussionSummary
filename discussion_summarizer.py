@@ -157,7 +157,7 @@ def main():
     theme='ParityError/Interstellar', #Add custom theme (purple)
     css="""
         #discussion-box {height: 200px;}
-        #selection-box {height: 100px;}
+        #selection-box {height: 92px;}
         #output-box {height: 615px; overflow: auto;}
     """) as demo:
         gr.Markdown("# Discussion Summariser")
@@ -182,15 +182,17 @@ def main():
                     step=50,
                     value=250,
                     interactive=True,
+                    elem_id='selection-box'
                 )
                 with gr.Row():
                     model_dropdown = gr.Dropdown(
                         label="Select OpenAI Model",
                         choices=AVAILABLE_MODELS,
                         value=DEFAULT_MODEL,  # Default selection
-                        interactive=True
+                        interactive=True,
+                        elem_id='selection-box'
                     )
-                    run_button = gr.Button("Generate")
+                    run_button = gr.Button("Generate", elem_id='selection-box')
         with gr.Row():
             # Left Column
             with gr.Column(scale=1):

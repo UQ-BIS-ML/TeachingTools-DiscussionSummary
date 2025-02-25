@@ -52,7 +52,7 @@ python discussion_summarizer.py
 Navigate to `http://localhost:7860` in your browser.
 
 ### **Generate Summaries:**
-- Upload an **Excel file** containing discussion data.
+- Upload an **Excel file** containing discussion data (currently only from Padlet).
 - Select the **OpenAI model**.
 - Set the **word count limit**.
 - Edit the **context** as needed.

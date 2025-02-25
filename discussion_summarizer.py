@@ -153,7 +153,9 @@ def process_discussion_in_gradio(model: str, excel_file: str, context: str, word
 
 
 def main():
-    with gr.Blocks(css="""
+    with gr.Blocks(
+    theme='ParityError/Interstellar', #Add custom theme (purple)
+    css="""
         #discussion-box {height: 200px;}
         #selection-box {height: 100px;}
         #output-box {height: 615px; overflow: auto;}

@@ -19,7 +19,7 @@
 ### 1. **Clone the Repository:**
 ```bash
 git clone https://github.com/UQ-BIS-ML/TeachingTools-DiscussionSummary.git
-cd discussion-summariser
+cd TeachingTools-DiscussionSummary
 ```
 
 ### 2. **Install Dependencies:**

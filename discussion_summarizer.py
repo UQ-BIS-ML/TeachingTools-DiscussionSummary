@@ -132,15 +132,20 @@ def synthesize_discussions(model: str, discussions: List[str], context: str, wor
     return response.choices[0].message.content
 
 
-def process_discussion_in_gradio(model: str, excel_file: str, context: str, word_count: int):
-    summaries: List[str] = []
+def process_discussion_in_gradio(model: str, excel_file: str, context: str, word_count: int, format: str):
 
     filename = os.path.basename(excel_file)
     log_output(f"Processing: {filename}")
 
     ##code to get list of discussions
-    df = pd.read_excel(f'./Discussions/{filename}')
-    summaries = [discussion for discussion in df['Body'] if discussion != 'No data']
+
+    if format == "Padlet":
+        df = pd.read_excel(f'./Discussions/{filename}')
+        summaries = [discussion for discussion in df['Body'] if discussion != 'No data']
+    else:
+        df = pd.read_csv(f'./Discussions/{filename}')
+        summaries = [discussion for discussion in df.index[1:]]
+
 
     discussion_summary = synthesize_discussions(model, summaries, context, word_count)
     output_filename = f'./Summaries/{filename}_summary.txt'
@@ -169,7 +174,7 @@ def main():
                 with gr.Row():
                     excel_input = gr.File(
                         label="Upload Discussion",
-                        file_types=[".xlsx"],
+                        file_types=[".xlsx", ".csv"],
                         file_count="single",
                         elem_id="discussion-box"
                     )
@@ -197,9 +202,12 @@ def main():
         with gr.Row():
             # Left Column
             with gr.Column(scale=1):
+                with gr.Row():
+                    format_checkbox = gr.Radio(["Padlet", "H5P"], label="Format", info="Which format is the discussion in?", value='Padlet')
+
                 context_textbox = gr.Textbox(
                     label="Edit Context",
-                    lines=10,
+                    lines=20,
                     placeholder="Context description will appear here for editing.",
                     interactive=True,
                     elem_id="context-box"
@@ -217,15 +225,17 @@ def main():
             """Load the content of the selected task into the textbox."""
             log_output(f"Changed model to {model_name}")
 
-        def process_files_and_task(model, excel_files, context, word_count):
-            return process_discussion_in_gradio(model, excel_files, context, word_count)
+        def process_files_and_task(model, excel_files, context, word_count, format):
+            return process_discussion_in_gradio(model, excel_files, context, word_count, format)
+
+
 
         # Populate the textbox when a task is selected
         model_dropdown.change(fn=check_model_name, inputs=model_dropdown, outputs=None)
 
         # Use the content of the textbox for processing
         run_button.click(fn=process_files_and_task,
-                         inputs=[model_dropdown, excel_input, context_textbox, word_count_slider], outputs=output)
+                         inputs=[model_dropdown, excel_input, context_textbox, word_count_slider, format_checkbox], outputs=output)
 
     demo.launch()
 
